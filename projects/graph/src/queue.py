@@ -14,3 +14,6 @@ class Queue:
 
     def size(self):
         return self.queue_size
+
+    def isEmpty(self):
+        return self.storage == []

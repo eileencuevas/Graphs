@@ -10,3 +10,6 @@ class Stack:
 
     def size(self):
         return len(self.items)
+
+    def isEmpty(self):
+        return self.storage == []
