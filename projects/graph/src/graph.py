@@ -51,6 +51,13 @@ class Graph:
                 for next_vert in self.vertices[v]:
                     s.push(next_vert)
 
+    def dft_recursive(self, starting_vertex_id, visited=set()):
+        if starting_vertex_id not in visited:
+            visited.add(starting_vertex_id)
+            print(starting_vertex_id)
+            for next_vert in self.vertices[starting_vertex_id]:
+                self.dft_recursive(next_vert, visited)
+
     def bfs(self, starting_vertex, target):  # Breath-First Search
         search_queue = Queue()
         search_queue.enqueue([starting_vertex])
