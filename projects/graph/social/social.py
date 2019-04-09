@@ -95,8 +95,24 @@ class SocialGraph:
 
         The key is the friend's ID and the value is the path.
         """
+        # implement a bfs since it's supposed to be the shortest path returned guaranteed
+        queue = Queue()
+        queue.enqueue([userID])
         visited = {}  # Note that this is a dictionary, not a set
-
+        # need to find all routes between the user supplied their friends
+        # as well as user supplied and friend's friends
+        while queue.size() > 0:
+            path = queue.dequeue()
+            user = path[-1]
+            if user not in visited:
+                # print(f"Current User: {user}, Current Path: {path}")
+                visited[user] = path
+                for neighbor in self.friendships[user]:
+                    new_path = list(path)
+                    new_path.append(neighbor)
+                    queue.enqueue(new_path)
+        visited = {key: value for key,
+                   value in visited.items() if value != set()}
         return visited
 
 
