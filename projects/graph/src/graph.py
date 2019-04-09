@@ -34,7 +34,7 @@ class Graph:
         while q.size() > 0:
             v = q.dequeue()
             if v not in visited:
-                print(v)
+                print(f"current vertex {v}")
                 visited.add(v)
                 for next_vert in self.vertices[v]:
                     q.enqueue(next_vert)
@@ -46,7 +46,7 @@ class Graph:
         while s.size() > 0:
             v = s.pop()
             if v not in visited:
-                print(v)
+                print(f"current vertex {v}")
                 visited.add(v)
                 for next_vert in self.vertices[v]:
                     s.push(next_vert)
@@ -56,7 +56,7 @@ class Graph:
             visited = set()
         if starting_vertex_id not in visited:
             visited.add(starting_vertex_id)
-            print(starting_vertex_id)
+            print(f"current vertex: {starting_vertex_id}")
             for next_vert in self.vertices[starting_vertex_id]:
                 self.dft_recursive(next_vert, visited)
 
@@ -68,35 +68,29 @@ class Graph:
             current_path = search_queue.dequeue()
             current_vertex = current_path[-1]
             if current_vertex not in visited:
-                visited.add(current_vertex)
                 if current_vertex == target:
                     return current_path
-                else:
-                    for next_vert in self.vertices[current_vertex]:
-                        if next_vert is not None:
-                            current_path.append(next_vert)
-                            search_queue.enqueue(current_path)
+                visited.add(current_vertex)
+                for next_vert in self.vertices[current_vertex]:
+                    new_path = list(current_path)
+                    new_path.append(next_vert)
+                    search_queue.enqueue(new_path)
         return f"No route found from {starting_vertex} to {target}"
 
     def dfs(self, starting_vertex, target):  # Depth-First Search
         search_stack = Stack()
         search_stack.push([starting_vertex])
         visited = set()
-        paths_to_target = []
         while search_stack.size() > 0:
             current_path = search_stack.pop()
             current_vertex = current_path[-1]
             if current_vertex not in visited:
-                visited.add(current_vertex)
                 if current_vertex == target:
-                    paths_to_target.append(current_path)
-                else:
-                    for next_vert in self.vertices[current_vertex]:
-                        if next_vert is not None:
-                            current_path.append(next_vert)
-                            search_stack.push(current_path)
-        if len(paths_to_target) > 0:
-            return min(paths_to_target)
-        else:
-            # target not found
-            return f"No route found from {starting_vertex} to {target}"
+                    return current_path
+                visited.add(current_vertex)
+                for next_vert in self.vertices[current_vertex]:
+                    new_path = list(current_path)
+                    new_path.append(next_vert)
+                    search_stack.push(new_path)
+        # target not found
+        return f"No route found from {starting_vertex} to {target}"
