@@ -51,7 +51,9 @@ class Graph:
                 for next_vert in self.vertices[v]:
                     s.push(next_vert)
 
-    def dft_recursive(self, starting_vertex_id, visited=set()):
+    def dft_recursive(self, starting_vertex_id, visited=None):
+        if visited is None:
+            visited = set()
         if starting_vertex_id not in visited:
             visited.add(starting_vertex_id)
             print(starting_vertex_id)
