@@ -1,6 +1,8 @@
 from room import Room
+from stack import Stack
 import random
 import math
+
 
 class World:
     def __init__(self):
@@ -8,6 +10,7 @@ class World:
         self.rooms = {}
         self.roomGrid = []
         self.gridSize = 0
+
     def loadGraph(self, roomGraph):
         numRooms = len(roomGraph)
         rooms = [None] * numRooms
@@ -15,7 +18,8 @@ class World:
         for i in range(0, numRooms):
             x = roomGraph[i][0][0]
             gridSize = max(gridSize, roomGraph[i][0][0], roomGraph[i][0][1])
-            self.rooms[i] = Room(f"Room {i}", f"({roomGraph[i][0][0]},{roomGraph[i][0][1]})",i, roomGraph[i][0][0], roomGraph[i][0][1])
+            self.rooms[i] = Room(
+                f"Room {i}", f"({roomGraph[i][0][0]},{roomGraph[i][0][1]})", i, roomGraph[i][0][0], roomGraph[i][0][1])
         self.roomGrid = []
         gridSize += 1
         self.gridSize = gridSize
@@ -25,13 +29,17 @@ class World:
             room = self.rooms[roomID]
             self.roomGrid[room.x][room.y] = room
             if 'n' in roomGraph[roomID][1]:
-                self.rooms[roomID].connectRooms('n', self.rooms[roomGraph[roomID][1]['n']])
+                self.rooms[roomID].connectRooms(
+                    'n', self.rooms[roomGraph[roomID][1]['n']])
             if 's' in roomGraph[roomID][1]:
-                self.rooms[roomID].connectRooms('s', self.rooms[roomGraph[roomID][1]['s']])
+                self.rooms[roomID].connectRooms(
+                    's', self.rooms[roomGraph[roomID][1]['s']])
             if 'e' in roomGraph[roomID][1]:
-                self.rooms[roomID].connectRooms('e', self.rooms[roomGraph[roomID][1]['e']])
+                self.rooms[roomID].connectRooms(
+                    'e', self.rooms[roomGraph[roomID][1]['e']])
             if 'w' in roomGraph[roomID][1]:
-                self.rooms[roomID].connectRooms('w', self.rooms[roomGraph[roomID][1]['w']])
+                self.rooms[roomID].connectRooms(
+                    'w', self.rooms[roomGraph[roomID][1]['w']])
         self.startingRoom = self.rooms[0]
 
     def printRooms(self):
@@ -40,7 +48,8 @@ class World:
             rotatedRoomGrid.append([None] * len(self.roomGrid))
         for i in range(len(self.roomGrid)):
             for j in range(len(self.roomGrid[0])):
-                rotatedRoomGrid[len(self.roomGrid[0]) - j - 1][i] = self.roomGrid[i][j]
+                rotatedRoomGrid[len(self.roomGrid[0]) -
+                                j - 1][i] = self.roomGrid[i][j]
         print("#####")
         str = ""
         for row in rotatedRoomGrid:
@@ -86,4 +95,37 @@ class World:
         print(str)
         print("#####")
 
+    def opposite_direction(self, direction):
+        if direction == 'n':
+            return 's'
+        if direction == 's':
+            return 'n'
+        if direction == 'e':
+            return 'w'
+        if direction == 'w':
+            return 'e'
 
+    def dfs(self, starting_room, traversal_path=['n', 's']):
+        search_stack = Stack()
+        search_stack.push([starting_room])
+        visited = {}
+
+        while search_stack.size() > 0:
+            current_room = search_stack.pop()
+            if current_room not in visited:
+                # get all connecting rooms via room.getExits, which returns a list of exits
+                current_room_exits = current_room.getExits()
+                # loop through list and call room.getRoomInDirection
+                # add all of this to dictionary in form of { direction: room }
+                current_exits_dict = {
+                    exit_direction: '?' for exit_direction in current_room_exits}
+                for exit_direction in current_exits_dict:
+                    if current_room.getRoomInDirection(exit_direction) == visited[-1]:
+                        visited[-1][self.opposite_direction(
+                            exit_direction)] = current_room
+                        current_exits_dict[exit_direction] = visited[-1]
+
+                # set dict as value for key of current_room
+                visited[current_room] = current_exits_dict
+                # start moving to neighbors, I guess
+                # todo
