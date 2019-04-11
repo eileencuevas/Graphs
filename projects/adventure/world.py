@@ -106,66 +106,64 @@ class World:
         if direction == 'w':
             return 'e'
 
-    def bfs(self, starting_room, traversal_path, dfs_visited):
+    def room_search(self, starting_room, traversal_path=None):
+        search_queue = Stack()
+        search_queue.push([starting_room])
+        visited = {}
+        if traversal_path is None:
+            traversal_path = []
+        else:
+            traversal_path.pop()
+            traversal_path.pop()
+        last_room = None
+        while search_queue.size() > 0:
+            current_path = search_queue.pop()
+            current_room = current_path[-1]
+            if current_room not in visited:
+                visited[current_room] = current_path
+                current_room_exits = current_room.getExits()
+                if last_room is not None:
+                    dir_traveled = ''
+                    for room_exit in current_room_exits:
+                        if current_room.getRoomInDirection(room_exit) == last_room:
+                            dir_traveled = self.opposite_direction(room_exit)
+                    if len(dir_traveled) > 0:
+                        traversal_path.append(dir_traveled)
+                    else:
+                     # find path from last room to this room and append it to traversal path
+                        dir_traveled = self.bfs_with_target(
+                            last_room, current_room)
+                        traversal_path.extend(dir_traveled)
+                last_room = current_room
+                for room_exit in current_room_exits:
+                    next_room = current_room.getRoomInDirection(room_exit)
+                    new_path = list(current_path)
+                    new_path.append(next_room)
+                    search_queue.push(new_path)
+        return traversal_path
+
+    def bfs_with_target(self, starting_room, target_room):
         search_queue = Queue()
         search_queue.enqueue([starting_room])
-        already_searched = set()
+        visited = {}
         while search_queue.size() > 0:
             current_path = search_queue.dequeue()
             current_room = current_path[-1]
-            # check and see if we've already hit this room, and if not
-            if current_room not in already_searched:
-                # check in dfs_visited to see if this room got them ?. if yes, we gotta make a
-                # path to append somehow and return the new current_room for dfs
-                if '?' in dfs_visited[current_room]:
-                    # MAKE THE PATH SOMEHOW AND APPEND IT TO TRAVERSAL_PATH
-
-                    return current_room
-            # add the room to the already_searched
-            already_searched.add(current_room)
-            # check the neighboring rooms for the same shit
-            for neighbor in dfs_visited[current_room]:
-                new_path = list(current_path)
-                new_path.append(neighbor)
-                search_queue.enqueue(new_path)
-            # if nothing, just return.... Frederick I guess idk
-        return None
-
-    def dfs(self, starting_room, traversal_path=['n', 's']):
-        search_stack = Stack()
-        search_stack.push(starting_room)
-        visited = {}
-        last_room = None
-
-        while search_stack.size() > 0:
-            current_room = search_stack.pop()
             if current_room not in visited:
-                # get all connecting rooms via room.getExits, which returns a list of exits
+                if current_room == target_room:
+                    # we're getting a list of room objects here.
+                    # make cardinal directions list
+                    possible_dir = ['n', 's', 'e', 'w']
+                    # iterate through current path up to second to last room
+                    # for each room, iterate through directions list
+                    # if room at direction == room + 1, append dir to list
+                    path_with_dirs = [d for i in range(len(
+                        current_path)-1) for d in possible_dir if current_path[i].getRoomInDirection(d) == current_path[i+1]]
+                    return path_with_dirs
+                visited[current_room] = current_path
                 current_room_exits = current_room.getExits()
-                # loop through list and call room.getRoomInDirection
-                # add all of this to dictionary in form of { direction: room }
-                current_exits_dict = {
-                    exit_direction: '?' for exit_direction in current_room_exits}
-                if last_room is not None:
-                    for exit_direction in current_exits_dict:
-                        if current_room.getRoomInDirection(exit_direction) == visited[last_room]:
-                            visited[last_room][self.opposite_direction(
-                                exit_direction)] = current_room
-                            current_exits_dict[exit_direction] = visited[last_room]
-
-                # set dict as value for key of current_room
-                visited[current_room] = current_exits_dict
-                # start moving to neighbors, I guess
-                possible_path = visited[current_room]
-                last_room = current_room
-                if '?' not in possible_path.values():
-                    current_room = self.bfs(
-                        current_room, traversal_path, visited)
-                    if current_room is None:
-                        search_stack = Stack()
-                for exit_direction in possible_path:
-                    if possible_path[exit_direction] == '?':
-                        traversal_path.append(exit_direction)
-                        search_stack.push(
-                            current_room.getRoomInDirection(exit_direction))
-        return visited
+                for room_exit in current_room_exits:
+                    next_room = current_room.getRoomInDirection(room_exit)
+                    new_path = list(current_path)
+                    new_path.append(next_room)
+                    search_queue.enqueue(new_path)
